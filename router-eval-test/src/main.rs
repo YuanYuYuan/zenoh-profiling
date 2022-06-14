@@ -5,10 +5,9 @@ use zenoh::{
 };
 use async_std::stream::StreamExt;
 use clap::Parser;
-
-// #[cfg(feature = "dhat-heap")]
-#[global_allocator]
-static ALLOC: dhat::Alloc = dhat::Alloc;
+use rand::Rng;
+use rand::prelude::SliceRandom;
+use zenoh_protocol_core::WhatAmI;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -21,24 +20,31 @@ struct Args {
     #[clap(short, long)]
     disable_multicast: bool,
 
+    #[clap(short, long, default_value = "peer")]
+    mode: WhatAmI,
+
     #[clap(short, long)]
     connect: Option<String>,
 }
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    let _profiler = dhat::Profiler::new_heap();
-
     let Args {
         num_peers,
         disable_multicast,
         connect,
+        mode,
     } = Args::parse();
 
 
     let jobs = (0..num_peers).map(|idx| {
         let connect_ = connect.clone();
+        let mut rng = rand::thread_rng();
+        let time = std::time::Duration::from_millis(rng.gen_range(0..1000));
+        // let choices = [0, 1000];
+        // let time = std::time::Duration::from_millis(*[0, 1000].choose(&mut rng).unwrap());
         async_std::task::spawn(async move {
+            async_std::task::sleep(time).await;
             let config = {
                 let mut config = Config::default();
                 if disable_multicast {
@@ -54,6 +60,9 @@ async fn main() -> Result<()> {
                         .endpoints
                         .extend(vec![x.try_into()?]);
                 }
+
+                config.set_mode(Some(mode)).unwrap();
+
                 config
             };
             let session = zenoh::open(config).await?;

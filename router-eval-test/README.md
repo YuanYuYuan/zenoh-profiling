@@ -308,14 +308,20 @@ That is it may still received the correct number of replies at that time.
 
 ### Flamegraph Analysis
 
-[Peer Mode](./analysis/peer.svg)
-
-[Client Mode](./analysis/client.svg)
-
-[Peer Mode (use hashmap)](./analysis/use-hashmap.svg)
-
-[Peer Mode (skip the function remove_detached_nodes)](./analysis/skip-remove-detached-nodes.svg)
-
 A obvious bottleneck in Peer Mode occurs at zenoh::net::rounting::Network::remove_detached_nodes, which is not observed in the case of Client Mode.
-We tried to alternative methods like use hashmap to eliminate the cost of [get_idx (O(n))](https://github.com/eclipse-zenoh/zenoh/blob/f733795d527f23757fe4ed6715443c904a40abb4/zenoh/src/net/routing/network.rs#L139-L143) and skip [remove_detached_nodes](https://github.com/eclipse-zenoh/zenoh/blob/f733795d527f23757fe4ed6715443c904a40abb4/zenoh/src/net/routing/network.rs#L618-L631) to workaround the expensive
-DFS graph traversal. But the CPU intensive consumption still remain in the peer mode.
+We tried to alternative methods like use hashmap to eliminate the cost of [get_idx (O(n))](https://github.com/eclipse-zenoh/zenoh/blob/f733795d527f23757fe4ed6715443c904a40abb4/zenoh/src/net/routing/network.rs#L139-L143) and skip [remove_detached_nodes](https://github.com/eclipse-zenoh/zenoh/blob/f733795d527f23757fe4ed6715443c904a40abb4/zenoh/src/net/routing/network.rs#L618-L631) to workaround the expensive DFS graph traversal. But the CPU intensive consumption still remain in the peer mode.
+
+[Peer Mode](./analysis/flamegraph/peer.svg)
+
+[Client Mode](./analysis/flamegraph/client.svg)
+
+[Peer Mode (use hashmap)](./analysis/flamegraph/use-hashmap.svg)
+
+[Peer Mode (skip the function remove_detached_nodes)](./analysis/flamegraph/skip-remove-detached-nodes.svg)
+
+
+### CPU & Memory Usage Analysis
+
+| Peer Mode                           | Client Mode                           |
+| -                                   | -                                     |
+| ![](./analysis/usage/peer-mode.gif) | ![](./analysis/usage/client-mode.gif) |

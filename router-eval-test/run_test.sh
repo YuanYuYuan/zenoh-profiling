@@ -67,15 +67,15 @@ QUERY_TIMEOUT=15
 export PYTHONWARNINGS="ignore"
 
 cleanup
-for NUM_PEERS in {32..48}; do
+for NUM_PEERS in {12..48}; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \
-            --listen "$ENDPOINT" 2>&1 > ${ROUTER_LOG_DIR}/${NUM_PEERS}.txt
+            --listen "$ENDPOINT" > ${ROUTER_LOG_DIR}/${NUM_PEERS}.txt 2>&1
     " \
         --log ${ROUTER_USAGE_DIR}/${NUM_PEERS}.txt \
         --plot ${ROUTER_USAGE_DIR}/${NUM_PEERS}.png \
-        --include-children 2>&1 > /dev/null &
+        --include-children > /dev/null &
 
     sleep 1
 
@@ -85,11 +85,11 @@ for NUM_PEERS in {32..48}; do
             --num-peers $NUM_PEERS \
             --disable-multicast \
             --timeout $EVAL_TIMEOUT \
-            --connect "$ENDPOINT" 2>&1 > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt
+            --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt 2>&1
     " \
         --log ${EVAL_USAGE_DIR}/${NUM_PEERS}.txt \
         --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
-        --include-children 2>&1 > /dev/null &
+        --include-children > /dev/null &
 
     # # Add --disable-peers-autoconnect
     # psrecord "
@@ -99,11 +99,11 @@ for NUM_PEERS in {32..48}; do
     #         --disable-multicast \
     #         --disable-peers-autoconnect \
     #         --timeout $EVAL_TIMEOUT \
-    #         --connect "$ENDPOINT" 2>&1 > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt
+    #         --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt 2>&1
     # " \
     #     --log ${EVAL_USAGE_DIR}/${NUM_PEERS}.txt \
     #     --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
-    #     --include-children 2>&1 > /dev/null &
+    #     --include-children > /dev/null &
 
     sleep 3
 
@@ -112,11 +112,11 @@ for NUM_PEERS in {32..48}; do
             --mode 'peer' \
             --disable-multicast \
             --timeout $QUERY_TIMEOUT \
-            --connect "$ENDPOINT" 2>&1 > ${QUERY_LOG_DIR}/${NUM_PEERS}.txt
+            --connect "$ENDPOINT" > ${QUERY_LOG_DIR}/${NUM_PEERS}.txt 2>&1
     " \
         --log ${QUERY_USAGE_DIR}/${NUM_PEERS}.txt \
         --plot ${QUERY_USAGE_DIR}/${NUM_PEERS}.png \
-        --include-children 2>&1 > /dev/null
+        --include-children > /dev/null
 
     cleanup
     sleep 1

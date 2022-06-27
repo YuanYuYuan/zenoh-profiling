@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-zenoh = { git = "https://github.com/eclipse-zenoh/zenoh" }
-zenoh-protocol-core = { git = "https://github.com/eclipse-zenoh/zenoh" }
-# zenoh = { path = "../../zenoh/zenoh" }
-# zenoh-protocol-core = { path = "../../zenoh/commons/zenoh-protocol-core" }
+# zenoh = { git = "https://github.com/eclipse-zenoh/zenoh" }
+# zenoh-protocol-core = { git = "https://github.com/eclipse-zenoh/zenoh" }
+zenoh = { path = "../../zenoh/zenoh" }
+zenoh-protocol-core = { path = "../../zenoh/commons/zenoh-protocol-core" }
 async-std = { version = "=1.11.0", default-features = false, features = ["attributes"] }
 anyhow = "1.0.57"
 futures = "0.3.21"

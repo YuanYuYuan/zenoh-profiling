@@ -61,13 +61,14 @@ function ctrl_c() {
 ENDPOINT="tcp/127.0.0.1:7447"
 EVAL_MODE="peer"
 # EVAL_MODE="client"
-EVAL_TIMEOUT=15
-QUERY_TIMEOUT=15
+EVAL_TIMEOUT=60
+QUERY_TIMEOUT=60
 
 export PYTHONWARNINGS="ignore"
 
 cleanup
-for NUM_PEERS in {12..48}; do
+# for NUM_PEERS in {12..48}; do
+for NUM_PEERS in {64..64}; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \

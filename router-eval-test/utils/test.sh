@@ -69,7 +69,7 @@ export PYTHONWARNINGS="ignore"
 cleanup
 
 # for NUM_PEERS in {12..48}; do
-for NUM_PEERS in 18; do
+for NUM_PEERS in 24; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \

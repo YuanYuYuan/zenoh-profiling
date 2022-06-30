@@ -67,20 +67,6 @@ async fn main() -> Result<()> {
         .count()
         .await;
 
-    // let mut replies = session.get("/key/*").await?;
-    // while let Ok(reply) = timeout(Duration::from_secs(10), replies.next()).await {
-    //     dbg!();
-    //     if let Some(reply) = reply {
-    //         println!(
-    //             "[Query] Received reply '{}' from '{}'",
-    //             String::from_utf8_lossy(&reply.sample.value.payload.contiguous()),
-    //             reply.sample.key_expr.as_str()
-    //         )
-    //     }
-    //     dbg!();
-    // }
-    //
-
     println!("[Query] Ended with {} peers replied.", num_replied);
 
     Ok(())

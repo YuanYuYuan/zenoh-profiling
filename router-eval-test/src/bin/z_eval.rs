@@ -96,7 +96,7 @@ async fn main() -> Result<()> {
                 println!("[Eval] Peer #{} received query {}", idx, query.selector());
                 query.reply_async(Sample::new(
                     key_expr.clone(),
-                    format!("Hi, I'm peer #{}.", idx)
+                    format!("Hi, I'm peer {}.", session.id().await)
                 )).await;
             }
             // queryable.close();

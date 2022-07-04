@@ -47,6 +47,7 @@ async fn main() -> Result<()> {
     };
 
     let session = zenoh::open(config).await?;
+    println!("[Query] PID: {}", session.id().await);
     let num_replied = session
         .get("/key/*")
         .await?

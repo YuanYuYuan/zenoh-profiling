@@ -62,17 +62,16 @@ function ctrl_c() {
 ENDPOINT="tcp/127.0.0.1:7447"
 EVAL_MODE="peer"
 # EVAL_MODE="client"
-EVAL_TIMEOUT=15
-QUERY_TIMEOUT=15
-# EVAL_TIMEOUT=30
-# QUERY_TIMEOUT=30
+EVAL_TIMEOUT=120
+QUERY_TIMEOUT=30
+WARMUP=30
 
 export PYTHONWARNINGS="ignore"
 
 cleanup
 
 # for NUM_PEERS in {12..32}; do
-for NUM_PEERS in 24; do
+for NUM_PEERS in 32; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \
@@ -110,8 +109,7 @@ for NUM_PEERS in 24; do
     #     --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
     #     --include-children > /dev/null &
 
-    # sleep 3
-    sleep 10
+    sleep $WARMUP
 
     psrecord "
         $QUERY_PROGRAM_PATH \
@@ -123,8 +121,6 @@ for NUM_PEERS in 24; do
         --log ${QUERY_USAGE_DIR}/${NUM_PEERS}.txt \
         --plot ${QUERY_USAGE_DIR}/${NUM_PEERS}.png \
         --include-children > /dev/null
-
-    # sleep 3
 
     cleanup
     sleep 1

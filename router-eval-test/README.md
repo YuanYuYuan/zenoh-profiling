@@ -307,6 +307,37 @@ That is it may still received the correct number of replies at that time.
 
 </details>
 
+<details>
+<summary>[ERROR] Received peer declaration with unknown routing context id </summary>
+
+```bash
+[2022-07-04T15:01:52Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+[2022-07-04T15:02:08Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+[2022-07-04T15:02:15Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 7
+[2022-07-04T15:02:15Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 11
+[2022-07-04T15:02:15Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 16
+[2022-07-04T15:02:15Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 24
+[2022-07-04T15:02:15Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 26
+[2022-07-04T15:02:22Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+[2022-07-04T15:02:23Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+[2022-07-04T15:02:27Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+[2022-07-04T15:02:30Z ERROR zenoh::net::routing::face] Received peer declaration with unknown routing context id 0
+```
+
+</details>
+
+<details>
+<summary>[ERROR] Cannot find local psid for context 0 on link </summary>
+
+```bash
+[2022-07-04T15:02:41Z ERROR zenoh::net::routing::network] Cannot find local psid for context 0 on link 32
+[2022-07-04T15:02:41Z ERROR zenoh::net::routing::network] Cannot find local psid for context 0 on link 32
+[2022-07-04T15:02:41Z ERROR zenoh::net::routing::network] Cannot find local psid for context 0 on link 32
+[2022-07-04T15:02:41Z ERROR zenoh::net::routing::network] Cannot find local psid for context 0 on link 32
+[2022-07-04T15:02:41Z ERROR zenoh::net::routing::network] Cannot find local psid for context 0 on link 32
+```
+
+</details>
 
 ## Discussion
 

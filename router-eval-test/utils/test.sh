@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ $(ulimit -n) = 1024 ]; then
+    echo "Avaiable file descriptors is too low. Try to run 'ulimit -n unlimited'"
+    exit
+fi
+
 ROUTER_PROGRAM_PATH="../../zenoh/target/release/zenohd"
 EVAL_PROGRAM_PATH="./target/release/z_eval"
 # EVAL_PROGRAM_PATH="cargo flamegraph --bin=z_eval -- "
@@ -25,7 +30,7 @@ if ! command -v $QUERY_PROGRAM_PATH &> /dev/null; then
 fi
 
 OUTPUT_DIR="outputs"
-rm -rf $OUTPUT_DIR
+rm -rvf $OUTPUT_DIR
 
 USAGE_DIR="${OUTPUT_DIR}/usage"
 ROUTER_USAGE_DIR="${USAGE_DIR}/router"
@@ -71,7 +76,7 @@ export PYTHONWARNINGS="ignore"
 cleanup
 
 # for NUM_PEERS in {12..32}; do
-for NUM_PEERS in 32; do
+for NUM_PEERS in 24; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \

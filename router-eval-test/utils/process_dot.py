@@ -61,6 +61,10 @@ node_mapping.update({pid: 'P%d' % (idx + 1) for (idx, pid) in enumerate(peer_pid
 node_mapping.update({query_pid: 'QU'})
 nodes = list(node_mapping.values())
 print(node_mapping)
+import json
+
+with open(args.in_dir / 'node_mapping.json', 'w') as f:
+    json.dump(node_mapping, f, indent=4)
 
 dot_files = sorted(list(
     (args.in_dir / 'network').glob('**/*.dot')

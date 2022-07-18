@@ -75,8 +75,8 @@ export PYTHONWARNINGS="ignore"
 
 cleanup
 
-# for NUM_PEERS in {12..32}; do
-for NUM_PEERS in 24; do
+for NUM_PEERS in {64..24..2}; do
+# for NUM_PEERS in 36; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
         $ROUTER_PROGRAM_PATH \
@@ -93,9 +93,10 @@ for NUM_PEERS in 24; do
             $EVAL_PROGRAM_PATH \
                 --mode $EVAL_MODE \
                 --num-peers 1 \
+                --peer-id-shift $PEER_ID \
                 --disable-multicast \
                 --timeout $EVAL_TIMEOUT \
-                --connect "$ENDPOINT" 2>&1 | tee ${EVAL_LOG_DIR}/${NUM_PEERS}-${PEER_ID}.txt
+                --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}-${PEER_ID}.txt 2>&1
         " \
             --log ${EVAL_USAGE_DIR}/${NUM_PEERS}-${PEER_ID}.txt \
             --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}-${PEER_ID}.png \

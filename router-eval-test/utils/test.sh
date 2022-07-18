@@ -75,7 +75,7 @@ export PYTHONWARNINGS="ignore"
 
 cleanup
 
-# for NUM_PEERS in {12..32}; do
+# for NUM_PEERS in {64..24..2}; do
 for NUM_PEERS in 24; do
     echo -n "Testing $NUM_PEERS peers ... "
     psrecord "
@@ -94,11 +94,11 @@ for NUM_PEERS in 24; do
             --num-peers $NUM_PEERS \
             --disable-multicast \
             --timeout $EVAL_TIMEOUT \
-            --connect "$ENDPOINT" 2>&1 | tee ${EVAL_LOG_DIR}/${NUM_PEERS}.txt
+            --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt 2>&1
     " \
         --log ${EVAL_USAGE_DIR}/${NUM_PEERS}.txt \
         --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
-        --include-children &
+        --include-children > /dev/null &
 
     # # Add --disable-peers-autoconnect
     # psrecord "

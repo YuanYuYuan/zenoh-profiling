@@ -33,12 +33,18 @@ struct Args {
 
     #[clap(short, long, default_value = "30")]
     timeout: u64,
+
+    #[clap(short, long, default_value = "0")]
+    peer_id_shift: usize,
 }
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    // use this to capture warn & error while piping stdout/stderr to files
-    env_logger::init();
+    // // use this to capture warn & error while piping stdout/stderr to files
+    // env_logger::init();
+
+    let mut builder = env_logger::Builder::from_default_env();
+    builder.format_timestamp_nanos().init();
 
     let Args {
         num_peers,
@@ -47,10 +53,12 @@ async fn main() -> Result<()> {
         connect,
         mode,
         timeout,
+        peer_id_shift,
     } = Args::parse();
 
 
     let jobs = (0..num_peers).map(|idx| {
+        let idx = idx + peer_id_shift;
         let connect_ = connect.clone();
         let mut rng = rand::thread_rng();
         let time = std::time::Duration::from_millis(rng.gen_range(0..1000));

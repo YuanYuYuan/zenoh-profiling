@@ -26,6 +26,9 @@ struct Args {
 
 #[async_std::main]
 async fn main() -> Result<()> {
+    let mut builder = env_logger::Builder::from_default_env();
+    builder.format_timestamp_nanos().init();
+
     let Args {
         disable_multicast,
         connect,

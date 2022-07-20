@@ -32,24 +32,6 @@ fi
 OUTPUT_DIR="outputs"
 rm -rvf $OUTPUT_DIR
 
-USAGE_DIR="${OUTPUT_DIR}/usage"
-ROUTER_USAGE_DIR="${USAGE_DIR}/router"
-EVAL_USAGE_DIR="${USAGE_DIR}/eval"
-QUERY_USAGE_DIR="${USAGE_DIR}/query"
-
-mkdir -p $EVAL_USAGE_DIR
-mkdir -p $QUERY_USAGE_DIR
-mkdir -p $ROUTER_USAGE_DIR
-
-LOG_DIR="${OUTPUT_DIR}/log"
-ROUTER_LOG_DIR="${LOG_DIR}/router"
-EVAL_LOG_DIR="${LOG_DIR}/eval"
-QUERY_LOG_DIR="${LOG_DIR}/query"
-
-mkdir -p $EVAL_LOG_DIR
-mkdir -p $QUERY_LOG_DIR
-mkdir -p $ROUTER_LOG_DIR
-
 function cleanup() {
     pkill $ROUTER_PROGRAM
     pkill $EVAL_PROGRAM
@@ -67,23 +49,35 @@ function ctrl_c() {
 ENDPOINT="tcp/127.0.0.1:7447"
 EVAL_MODE="peer"
 # EVAL_MODE="client"
+QUERY_MODE="peer"
+# QUERY_MODE="client"
 EVAL_TIMEOUT=120
 QUERY_TIMEOUT=30
-WARMUP=30
+# WARMUP=30
+WARMUP=3
+
 
 export PYTHONWARNINGS="ignore"
 
 cleanup
 
-# for NUM_PEERS in {64..24..2}; do
-for NUM_PEERS in 24; do
+# for NUM_PEERS in {48..24..2}; do
+# for NUM_PEERS in {8..12..2}; do
+for NUM_PEERS in 8; do
     echo -n "Testing $NUM_PEERS peers ... "
+
+    # output directories
+    LOG_DIR=${OUTPUT_DIR}/peer-${NUM_PEERS}/log
+    USAGE_DIR=${OUTPUT_DIR}/peer-${NUM_PEERS}/usage
+    mkdir -p $LOG_DIR
+    mkdir -p $USAGE_DIR
+
     psrecord "
         $ROUTER_PROGRAM_PATH \
-            --listen "$ENDPOINT" > ${ROUTER_LOG_DIR}/${NUM_PEERS}.txt 2>&1
+            --listen "$ENDPOINT" > ${LOG_DIR}/router.txt 2>&1
     " \
-        --log ${ROUTER_USAGE_DIR}/${NUM_PEERS}.txt \
-        --plot ${ROUTER_USAGE_DIR}/${NUM_PEERS}.png \
+        --log ${USAGE_DIR}/router.txt \
+        --plot ${USAGE_DIR}/router.png \
         --include-children > /dev/null &
 
     sleep 1
@@ -94,46 +88,32 @@ for NUM_PEERS in 24; do
             --num-peers $NUM_PEERS \
             --disable-multicast \
             --timeout $EVAL_TIMEOUT \
-            --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt 2>&1
+            --connect "$ENDPOINT" > ${LOG_DIR}/eval.txt 2>&1
     " \
-        --log ${EVAL_USAGE_DIR}/${NUM_PEERS}.txt \
-        --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
+        --log ${USAGE_DIR}/eval.txt \
+        --plot ${USAGE_DIR}/eval.png \
         --include-children > /dev/null &
-
-    # # Add --disable-peers-autoconnect
-    # psrecord "
-    #     $EVAL_PROGRAM_PATH \
-    #         --mode $EVAL_MODE \
-    #         --num-peers $NUM_PEERS \
-    #         --disable-multicast \
-    #         --disable-peers-autoconnect \
-    #         --timeout $EVAL_TIMEOUT \
-    #         --connect "$ENDPOINT" > ${EVAL_LOG_DIR}/${NUM_PEERS}.txt 2>&1
-    # " \
-    #     --log ${EVAL_USAGE_DIR}/${NUM_PEERS}.txt \
-    #     --plot ${EVAL_USAGE_DIR}/${NUM_PEERS}.png \
-    #     --include-children > /dev/null &
 
     sleep $WARMUP
 
     psrecord "
         $QUERY_PROGRAM_PATH \
-            --mode 'peer' \
+            --mode $QUERY_MODE \
             --disable-multicast \
             --timeout $QUERY_TIMEOUT \
-            --connect "$ENDPOINT" > ${QUERY_LOG_DIR}/${NUM_PEERS}.txt 2>&1
+            --connect "$ENDPOINT" > ${LOG_DIR}/query.txt 2>&1
     " \
-        --log ${QUERY_USAGE_DIR}/${NUM_PEERS}.txt \
-        --plot ${QUERY_USAGE_DIR}/${NUM_PEERS}.png \
+        --log ${USAGE_DIR}/query.txt \
+        --plot ${USAGE_DIR}/query.png \
         --include-children > /dev/null
 
     cleanup
     sleep 1
 
-    NUM_REPLIES=$(cat ${QUERY_LOG_DIR}/${NUM_PEERS}.txt | grep "\[Query\] Ended with" | cut -d ' ' -f 4)
+    NUM_REPLIES=$(cat ${LOG_DIR}/query.txt | rg -i 'Received reply' | sort | uniq | wc --lines)
     if [ "$NUM_REPLIES" = "$NUM_PEERS" ]; then
-        echo "passed." | tee -a ${QUERY_LOG_DIR}/${NUM_PEERS}.txt
+        echo "passed." | tee -a ${LOG_DIR}/query.txt
     else
-        echo "failed." | tee -a ${QUERY_LOG_DIR}/${NUM_PEERS}.txt
+        echo "failed." | tee -a ${LOG_DIR}/query.txt
     fi
 done

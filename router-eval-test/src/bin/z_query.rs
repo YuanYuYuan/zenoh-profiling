@@ -4,6 +4,7 @@ use zenoh::config::Config;
 use zenoh::prelude::SplitBuffer;
 use zenoh_protocol_core::WhatAmI;
 use std::time::Duration;
+use zenoh::query::QueryConsolidation;
 
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -53,6 +54,7 @@ async fn main() -> Result<()> {
     println!("[Query] PID: {}", session.id().await);
     let num_replied = session
         .get("/key/*")
+        .consolidation(QueryConsolidation::none())
         .await?
         .as_trystream()
         .take_until(

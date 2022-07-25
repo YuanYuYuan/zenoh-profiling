@@ -43,5 +43,9 @@ fig = px.bar(
     labels={'peer': 'Peer', 'count': 'Count'},
     title='Number of Received Replies (%s)' % ('Passed' if is_passed else 'Failed')
 )
-fig.update_layout(yaxis={'dtick':1})
-fig.show()
+#  fig.update_layout(yaxis={'dtick':1})
+
+out_dir = args.in_dir / 'replies'
+out_dir.mkdir(exist_ok=True)
+fig.write_image(out_dir / ('%d-%s.png' % (num_peers, 'passed' if is_passed else 'failed')))
+#  fig.show()

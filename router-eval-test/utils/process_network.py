@@ -16,6 +16,10 @@ parser.add_argument(
     help='folder containing the output logs'
 )
 parser.add_argument(
+    '--disable-drawing',
+    action='store_true'
+)
+parser.add_argument(
     '--out-dir',
     type=Path,
     default=Path('./plots'),
@@ -67,6 +71,9 @@ import json
 
 with open(args.in_dir / 'node_mapping.json', 'w') as f:
     json.dump(node_mapping, f, indent=4)
+
+if args.disable_drawing:
+    exit()
 
 dot_files = sorted(list(
     (args.in_dir / 'network').glob('**/*.dot')

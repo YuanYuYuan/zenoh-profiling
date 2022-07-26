@@ -1,0 +1,14 @@
+{
+  mode: "client",
+  scouting: {
+    multicast: {
+      enabled: false
+    },
+    gossip: {
+      enabled: false
+    },
+  },
+  connect: {
+    endpoints: ["tcp/127.0.0.1:7447"]
+  },
+}

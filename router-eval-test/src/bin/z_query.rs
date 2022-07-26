@@ -5,10 +5,10 @@ use futures::prelude::stream::{
 use clap::Parser;
 use zenoh::config::Config;
 use zenoh::prelude::SplitBuffer;
-use zenoh_protocol_core::WhatAmI;
 use std::time::Duration;
 use zenoh::query::{QueryConsolidation, QueryTarget};
 use zenoh::prelude::r#async::AsyncResolve;
+use std::path::PathBuf;
 
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -16,14 +16,8 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Parser)]
 struct Args {
-    #[clap(short, long)]
-    disable_multicast: bool,
-
-    #[clap(short, long, default_value = "peer")]
-    mode: WhatAmI,
-
-    #[clap(short, long)]
-    connect: Option<String>,
+    #[clap(short, long, parse(from_os_str))]
+    config: PathBuf,
 
     #[clap(short, long, default_value = "30")]
     timeout: u64,
@@ -35,25 +29,11 @@ async fn main() -> Result<()> {
     builder.format_timestamp_nanos().init();
 
     let Args {
-        disable_multicast,
-        connect,
-        mode,
+        config,
         timeout,
     } = Args::parse();
 
-    let config = {
-        let mut config = Config::default();
-        if disable_multicast {
-            config.scouting.multicast.set_enabled(Some(false)).unwrap();
-        }
-        if let Some(x) = connect {
-            config.connect.endpoints.extend(vec![x.try_into()?]);
-        }
-
-        config.set_mode(Some(mode)).unwrap();
-        config
-    };
-
+    let config = Config::from_file(config).unwrap();
     let session = zenoh::open(config).res().await.unwrap().into_arc();
     println!("[Query] PID: {}", session.id());
 

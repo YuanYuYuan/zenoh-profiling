@@ -7,9 +7,9 @@ use zenoh::{
 use clap::Parser;
 use rand::Rng;
 // use rand::prelude::SliceRandom;
-use zenoh_protocol_core::WhatAmI;
 use futures::{future::{try_join_all, select}, FutureExt};
 use std::time::Duration;
+use std::path::PathBuf;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -19,20 +19,8 @@ struct Args {
     #[clap(short, long)]
     num_peers: usize,
 
-    #[clap(short, long)]
-    disable_multicast: bool,
-
-    #[clap(short, long)]
-    no_gossip: bool,
-
-    #[clap(short, long)]
-    use_peer_linkstate: bool,
-
-    #[clap(short, long, default_value = "peer")]
-    mode: WhatAmI,
-
-    #[clap(short, long)]
-    connect: Option<String>,
+    #[clap(short, long, parse(from_os_str))]
+    config: PathBuf,
 
     #[clap(short, long, default_value = "30")]
     timeout: u64,
@@ -51,11 +39,7 @@ async fn main() -> Result<()> {
 
     let Args {
         num_peers,
-        disable_multicast,
-        no_gossip,
-        use_peer_linkstate,
-        connect,
-        mode,
+        config,
         timeout,
         peer_id_shift,
     } = Args::parse();
@@ -63,52 +47,12 @@ async fn main() -> Result<()> {
 
     let jobs = (0..num_peers).map(|idx| {
         let idx = idx + peer_id_shift;
-        let connect_ = connect.clone();
         let mut rng = rand::thread_rng();
         let time = std::time::Duration::from_millis(rng.gen_range(0..1000));
-        // let choices = [0, 1000];
-        // let time = std::time::Duration::from_millis(*[0, 1000].choose(&mut rng).unwrap());
+        let config_path = config.clone();
         async_std::task::spawn(async move {
             async_std::task::sleep(time).await;
-            let config = {
-                let mut config = Config::default();
-                if disable_multicast {
-                    config
-                        .scouting
-                        .multicast
-                        .set_enabled(Some(false))
-                        .unwrap();
-                }
-
-                config
-                    .scouting
-                    .gossip
-                    .set_enabled(Some(!no_gossip))
-                    .unwrap();
-
-                config
-                    .routing
-                    .peer
-                    .set_mode(if use_peer_linkstate {
-                        Some("linkstate".to_string())
-                    } else {
-                        Some("".to_string())
-                    })
-                    .unwrap();
-
-                dbg!(config.routing().peer().mode());
-
-                if let Some(x) = connect_ {
-                    config
-                        .connect
-                        .endpoints
-                        .extend(vec![x.try_into()?]);
-                }
-
-                config.set_mode(Some(mode)).unwrap();
-
-                config
-            };
+            let config = Config::from_file(config_path).unwrap();
             let session = zenoh::open(config).res().await.unwrap().into_arc();
             let key_expr = format!("key/{}", idx);
             let queryable = session

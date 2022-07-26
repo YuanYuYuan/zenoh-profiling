@@ -53,17 +53,21 @@ EVAL_MODE="peer"
 QUERY_MODE="client"
 EVAL_TIMEOUT=120
 QUERY_TIMEOUT=30
-WARMUP=30
-# WARMUP=3
+# WARMUP=30
+WARMUP=3
 
 
 export PYTHONWARNINGS="ignore"
 
 cleanup
 
-# for NUM_PEERS in {48..24..2}; do
+# for NUM_PEERS in {512..256..64}; do
+# for NUM_PEERS in {64..32..2}; do
 # for NUM_PEERS in {8..12..2}; do
-for NUM_PEERS in 8; do
+# for NUM_PEERS in 8; do
+for NUM_PEERS in {32..256..32}; do
+# for NUM_PEERS in {8..128..4}; do
+# for NUM_PEERS in 256; do
     echo -n "Testing $NUM_PEERS peers ... "
 
     # output directories
@@ -72,9 +76,12 @@ for NUM_PEERS in 8; do
     mkdir -p $LOG_DIR
     mkdir -p $USAGE_DIR
 
+            # --listen "$ENDPOINT" --config ./utils/router-config-peer-linkstate.json5 > ${LOG_DIR}/router.txt 2>&1
+            # --listen "$ENDPOINT" > ${LOG_DIR}/router.txt 2>&1
     psrecord "
         $ROUTER_PROGRAM_PATH \
-            --listen "$ENDPOINT" > ${LOG_DIR}/router.txt 2>&1
+            --config "./config/router.json5" \
+            > ${LOG_DIR}/router.txt 2>&1
     " \
         --log ${USAGE_DIR}/router.txt \
         --plot ${USAGE_DIR}/router.png \
@@ -82,15 +89,14 @@ for NUM_PEERS in 8; do
 
     sleep 1
 
+            # --use-peer-linkstate \
+
     psrecord "
         $EVAL_PROGRAM_PATH \
-            --mode $EVAL_MODE \
-            --no-gossip \
-            --use-peer-linkstate \
+            --config './config/eval.json5' \
             --num-peers $NUM_PEERS \
-            --disable-multicast \
             --timeout $EVAL_TIMEOUT \
-            --connect "$ENDPOINT" > ${LOG_DIR}/eval.txt 2>&1
+            > ${LOG_DIR}/eval.txt 2>&1
     " \
         --log ${USAGE_DIR}/eval.txt \
         --plot ${USAGE_DIR}/eval.png \
@@ -100,10 +106,9 @@ for NUM_PEERS in 8; do
 
     psrecord "
         $QUERY_PROGRAM_PATH \
-            --mode $QUERY_MODE \
-            --disable-multicast \
+            --config "./config/query.json5" \
             --timeout $QUERY_TIMEOUT \
-            --connect "$ENDPOINT" > ${LOG_DIR}/query.txt 2>&1
+            > ${LOG_DIR}/query.txt 2>&1
     " \
         --log ${USAGE_DIR}/query.txt \
         --plot ${USAGE_DIR}/query.png \

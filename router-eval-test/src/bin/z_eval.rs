@@ -1,9 +1,9 @@
 use zenoh::{
-    prelude::Sample,
+    prelude::{Sample, r#async::AsyncResolve},
     config::Config,
-    queryable::EVAL,
+    // queryable::EVAL,
 };
-use async_std::stream::StreamExt;
+// use async_std::stream::StreamExt;
 use clap::Parser;
 use rand::Rng;
 // use rand::prelude::SliceRandom;
@@ -23,7 +23,10 @@ struct Args {
     disable_multicast: bool,
 
     #[clap(short, long)]
-    disable_peers_autoconnect: bool,
+    no_gossip: bool,
+
+    #[clap(short, long)]
+    use_peer_linkstate: bool,
 
     #[clap(short, long, default_value = "peer")]
     mode: WhatAmI,
@@ -49,7 +52,8 @@ async fn main() -> Result<()> {
     let Args {
         num_peers,
         disable_multicast,
-        disable_peers_autoconnect,
+        no_gossip,
+        use_peer_linkstate,
         connect,
         mode,
         timeout,
@@ -75,12 +79,25 @@ async fn main() -> Result<()> {
                         .set_enabled(Some(false))
                         .unwrap();
                 }
-                if disable_peers_autoconnect {
-                    config
-                        .scouting
-                        .set_peers_autoconnect(Some(false))
-                        .unwrap();
-                }
+
+                config
+                    .scouting
+                    .gossip
+                    .set_enabled(Some(!no_gossip))
+                    .unwrap();
+
+                config
+                    .routing
+                    .peer
+                    .set_mode(if use_peer_linkstate {
+                        Some("linkstate".to_string())
+                    } else {
+                        Some("".to_string())
+                    })
+                    .unwrap();
+
+                dbg!(config.routing().peer().mode());
+
                 if let Some(x) = connect_ {
                     config
                         .connect
@@ -92,20 +109,18 @@ async fn main() -> Result<()> {
 
                 config
             };
-            let session = zenoh::open(config).await?;
-            let key_expr = format!("/key/{}", idx);
-            let mut queryable = session
-                .queryable(key_expr.clone())
-                .kind(EVAL)
+            let session = zenoh::open(config).res().await.unwrap().into_arc();
+            let key_expr = format!("key/{}", idx);
+            let queryable = session
+                .declare_queryable(key_expr.clone())
+                .res()
                 .await
                 .unwrap();
             println!("[Eval] Peer #{} builds queryable at '/key/{}'", idx, idx);
-            while let Some(query) = queryable.next().await {
+            while let Ok(query) = queryable.recv_async().await {
                 println!("[Eval] Peer #{} received query {}", idx, query.selector());
-                query.reply_async(Sample::new(
-                    key_expr.clone(),
-                    format!("Hi, I'm peer {}.", session.id().await)
-                )).await;
+                let replied_text = Sample::try_from(key_expr.clone(), format!("Hi, I'm peer {}.", session.id())).unwrap();
+                query.reply(Ok(replied_text)).res().await.unwrap();
             }
             // queryable.close();
             // session.close();

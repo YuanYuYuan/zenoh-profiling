@@ -1,10 +1,14 @@
-use futures::prelude::stream::{StreamExt, TryStreamExt};
+use futures::prelude::stream::{
+    StreamExt,
+    // TryStreamExt
+};
 use clap::Parser;
 use zenoh::config::Config;
 use zenoh::prelude::SplitBuffer;
 use zenoh_protocol_core::WhatAmI;
 use std::time::Duration;
-use zenoh::query::QueryConsolidation;
+use zenoh::query::{QueryConsolidation, QueryTarget};
+use zenoh::prelude::r#async::AsyncResolve;
 
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -50,25 +54,30 @@ async fn main() -> Result<()> {
         config
     };
 
-    let session = zenoh::open(config).await?;
-    println!("[Query] PID: {}", session.id().await);
+    let session = zenoh::open(config).res().await.unwrap().into_arc();
+    println!("[Query] PID: {}", session.id());
+
     let num_replied = session
-        .get("/key/*")
+        .get("key/*")
+        .target(QueryTarget::All)
+        .timeout(Duration::from_millis(10000))
         .consolidation(QueryConsolidation::none())
+        .res()
         .await?
-        .as_trystream()
+        .stream()
         .take_until(
             async move {
                 async_std::task::sleep(Duration::from_secs(timeout)).await;
             }
         )
-        .and_then(|reply| async move {
-            println!(
-                "[Query] Received reply '{}' from '{}'",
-                String::from_utf8_lossy(&reply.sample.value.payload.contiguous()),
-                reply.sample.key_expr.as_str()
-            );
-            Result::<_, Error>::Ok(())
+        .map(|reply| {
+            if let Ok(sample) = reply.sample {
+                println!(
+                    "[Query] Received reply '{}' from '{}'",
+                    String::from_utf8_lossy(&sample.value.payload.contiguous()),
+                    sample.key_expr.as_str()
+                );
+            }
         })
         .count()
         .await;

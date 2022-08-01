@@ -54,7 +54,9 @@ fig = px.line(
     symbol='sample',
     title='Reply Rate',
     markers=True,
-    labels={'sample': 'Exp name'}
+    labels={'sample': 'Exp name'},
+    width=1280,
+    height=720
 )
 
 fig.update_layout(

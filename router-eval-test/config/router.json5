@@ -5,14 +5,14 @@
       enabled: false
     },
     gossip: {
-      enabled: false
+      enabled: true
     },
   },
-  routing: {
-    peer: {
-      mode: "linkstate",
-    },
-  },
+  // routing: {
+  //   peer: {
+  //     mode: "linkstate",
+  //   },
+  // },
   listen: {
     endpoints: ["tcp/127.0.0.1:7447"]
   },

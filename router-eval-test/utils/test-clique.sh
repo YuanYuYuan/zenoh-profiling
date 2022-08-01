@@ -7,7 +7,6 @@ fi
 
 ROUTER_PROGRAM_PATH="../../zenoh/target/release/zenohd"
 EVAL_PROGRAM_PATH="./target/release/z_eval"
-# EVAL_PROGRAM_PATH="cargo flamegraph --bin=z_eval -- "
 QUERY_PROGRAM_PATH="./target/release/z_query"
 
 ROUTER_PROGRAM="zenohd"
@@ -46,28 +45,20 @@ function ctrl_c() {
 }
 
 
-ENDPOINT="tcp/127.0.0.1:7447"
-EVAL_MODE="peer"
-# EVAL_MODE="client"
-# QUERY_MODE="peer"
-QUERY_MODE="client"
+CONFIG_DIR="./config"
 EVAL_TIMEOUT=120
 QUERY_TIMEOUT=30
 # WARMUP=30
-WARMUP=3
+WARMUP=20
+# WARMUP=3
 
 
 export PYTHONWARNINGS="ignore"
 
 cleanup
 
-# for NUM_PEERS in {512..256..64}; do
-# for NUM_PEERS in {64..32..2}; do
-# for NUM_PEERS in {8..12..2}; do
-# for NUM_PEERS in 8; do
-for NUM_PEERS in {32..256..32}; do
-# for NUM_PEERS in {8..128..4}; do
-# for NUM_PEERS in 256; do
+for NUM_PEERS in 8; do
+# for NUM_PEERS in {1024..32..32}; do
     echo -n "Testing $NUM_PEERS peers ... "
 
     # output directories
@@ -76,11 +67,9 @@ for NUM_PEERS in {32..256..32}; do
     mkdir -p $LOG_DIR
     mkdir -p $USAGE_DIR
 
-            # --listen "$ENDPOINT" --config ./utils/router-config-peer-linkstate.json5 > ${LOG_DIR}/router.txt 2>&1
-            # --listen "$ENDPOINT" > ${LOG_DIR}/router.txt 2>&1
     psrecord "
         $ROUTER_PROGRAM_PATH \
-            --config "./config/router.json5" \
+            --config "${CONFIG_DIR}/router.json5" \
             > ${LOG_DIR}/router.txt 2>&1
     " \
         --log ${USAGE_DIR}/router.txt \
@@ -89,11 +78,9 @@ for NUM_PEERS in {32..256..32}; do
 
     sleep 1
 
-            # --use-peer-linkstate \
-
     psrecord "
         $EVAL_PROGRAM_PATH \
-            --config './config/eval.json5' \
+            --config '${CONFIG_DIR}/eval.json5' \
             --num-peers $NUM_PEERS \
             --timeout $EVAL_TIMEOUT \
             > ${LOG_DIR}/eval.txt 2>&1
@@ -106,7 +93,7 @@ for NUM_PEERS in {32..256..32}; do
 
     psrecord "
         $QUERY_PROGRAM_PATH \
-            --config "./config/query.json5" \
+            --config "${CONFIG_DIR}/query.json5" \
             --timeout $QUERY_TIMEOUT \
             > ${LOG_DIR}/query.txt 2>&1
     " \

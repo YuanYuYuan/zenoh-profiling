@@ -7,9 +7,9 @@ import plotly.express as px
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--exp-dir',
+    '--dir',
     type=Path,
-    default=Path('./exp/reply-rate'),
+    default=Path('./results/time'),
 )
 args = parser.parse_args()
 
@@ -35,16 +35,17 @@ def load_sample_data(sample_dir: Path):
         data['peer'].append(num_peers)
         data['reply'].append(result)
 
-    data = pd.DataFrame(data).sort_values(['peer'])
+    data = pd.DataFrame(data)
     data['reply'] = data['reply'] / data['peer'] * 100
     data['sample'] = str(sample_dir).split('/')[-2]
     return data
 
 data = pd.concat([
     load_sample_data(dir / 'outputs')
-    for dir in args.exp_dir.glob('*')
+    for dir in args.dir.glob('*')
     if dir.is_dir()
 ])
+data = data.sort_values(['peer', 'sample'])
 
 fig = px.line(
     data,
@@ -71,4 +72,5 @@ fig.update_layout(
     )
 )
 #  fig.show()
-fig.write_image(args.exp_dir / 'reply-rate.png')
+fig.write_image(args.dir / 'reply-rate.png')
+fig.write_html(args.dir / 'reply-rate.html')

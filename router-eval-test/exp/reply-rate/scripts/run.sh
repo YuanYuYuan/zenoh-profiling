@@ -5,9 +5,10 @@ if [ $(ulimit -n) = 1024 ]; then
     exit
 fi
 
-ROUTER_PROGRAM_PATH="../../zenoh/target/release/zenohd"
-EVAL_PROGRAM_PATH="./target/release/z_eval"
-QUERY_PROGRAM_PATH="./target/release/z_query"
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+ROUTER_PROGRAM_PATH="${ROOT_DIR}/../zenoh/target/release/zenohd"
+EVAL_PROGRAM_PATH="${ROOT_DIR}/router-eval-test/target/release/z_eval"
+QUERY_PROGRAM_PATH="${ROOT_DIR}/router-eval-test/target/release/z_query"
 
 ROUTER_PROGRAM="zenohd"
 EVAL_PROGRAM="z_eval"
@@ -43,8 +44,6 @@ function ctrl_c() {
 }
 
 
-EXP_DIR='exp/reply-rate'
-CONFIG_DIR="./config"
 EVAL_TIMEOUT=120
 QUERY_TIMEOUT=30
 # WARMUP=30
@@ -56,12 +55,14 @@ export PYTHONWARNINGS="ignore"
 
 cleanup
 
-for SAMPLE_DIR in $(ls -d $EXP_DIR/*); do
-    OUTPUT_DIR="${SAMPLE_DIR}/outputs"
-    rm -rvf $OUTPUT_DIR
+TIMESTAMP="$(date +%Y-%m-%d-%T)"
+for RECIPE_DIR in $(ls -d ./recipes/*); do
+    RECIPE_NAME=$(basename $RECIPE_DIR)
+    OUTPUT_DIR="./results/${TIMESTAMP}/${RECIPE_NAME}"
+    # rm -rvf $OUTPUT_DIR
 
     echo "================================================"
-    echo "[Exp]: $SAMPLE_DIR"
+    echo "[Exp]: $RECIPE_NAME"
     echo "================================================"
 
     # for NUM_PEERS in 8; do
@@ -76,7 +77,7 @@ for SAMPLE_DIR in $(ls -d $EXP_DIR/*); do
 
         psrecord "
             $ROUTER_PROGRAM_PATH \
-                --config "${SAMPLE_DIR}/config/router.json5" \
+                --config "${RECIPE_DIR}/router.json5" \
                 > ${LOG_DIR}/router.txt 2>&1
         " \
             --log ${USAGE_DIR}/router.txt \
@@ -87,7 +88,7 @@ for SAMPLE_DIR in $(ls -d $EXP_DIR/*); do
 
         psrecord "
             $EVAL_PROGRAM_PATH \
-                --config '${SAMPLE_DIR}/config/eval.json5' \
+                --config '${RECIPE_DIR}/eval.json5' \
                 --num-peers $NUM_PEERS \
                 --timeout $EVAL_TIMEOUT \
                 > ${LOG_DIR}/eval.txt 2>&1
@@ -100,7 +101,7 @@ for SAMPLE_DIR in $(ls -d $EXP_DIR/*); do
 
         psrecord "
             $QUERY_PROGRAM_PATH \
-                --config "${SAMPLE_DIR}/config/query.json5" \
+                --config "${RECIPE_DIR}/query.json5" \
                 --timeout $QUERY_TIMEOUT \
                 > ${LOG_DIR}/query.txt 2>&1
         " \

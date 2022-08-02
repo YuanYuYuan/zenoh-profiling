@@ -16,6 +16,7 @@ args = parser.parse_args()
 
 def load_sample_data(sample_dir: Path):
     query_log_files = list(sample_dir.glob('peer-*/log/query.txt'))
+    assert len(query_log_files) > 0
 
     data = {
         'peer': [],
@@ -37,11 +38,11 @@ def load_sample_data(sample_dir: Path):
 
     data = pd.DataFrame(data)
     data['reply'] = data['reply'] / data['peer'] * 100
-    data['sample'] = str(sample_dir).split('/')[-2]
+    data['sample'] = str(sample_dir).split('/')[-1]
     return data
 
 data = pd.concat([
-    load_sample_data(dir / 'outputs')
+    load_sample_data(dir)
     for dir in args.dir.glob('*')
     if dir.is_dir()
 ])
@@ -53,7 +54,7 @@ fig = px.line(
     y='reply',
     color='sample',
     symbol='sample',
-    title='Reply Rate',
+    title='Count Total Received Replies',
     markers=True,
     labels={'sample': 'Exp name'},
     width=1280,
